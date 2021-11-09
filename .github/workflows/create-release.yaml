@@ -21,4 +21,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: "release"
         run: |
-          hub pull-request -m "Github Actions からプルリクを出す" -b master -h $BRANCH_NAME -l "PR:draft"
+          hub pull-request -m "Github Actions からプルリクを出す" -b main -h $BRANCH_NAME -l "PR:draft"

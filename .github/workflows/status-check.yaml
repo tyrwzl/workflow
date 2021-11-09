@@ -1,0 +1,48 @@
+name: Create status check
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: first
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.head_ref != 'release' && github.base_ref == 'main'
+        run: |
+          curl \
+          -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/tyrwzl/workflow/check-runs \
+          -d '{"name":"ttcheck", "head_sha": "'"$GITHUB_SHA"'", "status": "queued" }'
+
+      - name: create status check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.head_ref == 'release' && github.base_ref == 'main'
+        run: |
+          curl \
+          -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/tyrwzl/workflow/statuses/${GITHUB_SHA} \
+          -d '{"state":"success", "target_url": "", "description": "OK",   "context": "target check" }'
+      - name: CreatePullRequest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.head_ref != 'release' && github.base_ref == 'main'
+        run: |
+          curl \
+          -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/tyrwzl/workflow/check-runs \
+          -d '{"name":"ttcheck", "head_sha": "'"$GITHUB_SHA"'", "status": "completed", "conclusion": "failure" }'

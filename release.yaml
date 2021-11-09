@@ -1,0 +1,17 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create new Branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git checkout -b release
+          git push --force origin release # branch protection を避けるため
+          curl -X POST -s -H "Authorization: token ${GITHUB_TOKEN}" -d '{"ref": "refs/heads/'"release"'","sha":"'"${GITHUB_SHA}"'"}' https://api.github.com/repos/tyrwzl/workflow/git/refs
